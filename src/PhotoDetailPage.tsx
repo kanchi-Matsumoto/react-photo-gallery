@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router";
+import { Link, useLocation, useParams } from "react-router";
 import type { LoadStatus, Photo } from "./types";
 import MemoForm from "./MemoForm";
 
@@ -18,6 +18,7 @@ function PhotoDetailPage({
   onSaveMemo,
 }: PhotoDetailPageProps) {
   const { id } = useParams();
+  const { search } = useLocation();
 
   const photo = photos.find((item) => item.id === id);
 
@@ -33,7 +34,7 @@ function PhotoDetailPage({
     return (
       <div className="detail">
         <p className="message">今の一覧に、この写真はありません。</p>
-        <Link to="/" className="back-link">
+        <Link to={{ pathname: "/", search }} className="back-link">
           一覧へ戻る
         </Link>
       </div>
@@ -46,7 +47,7 @@ function PhotoDetailPage({
 
   return (
     <div className="detail">
-      <Link to="/" className="back-link">
+      <Link to={{ pathname: "/", search }} className="back-link">
         一覧へ戻る
       </Link>
 
@@ -80,10 +81,10 @@ function PhotoDetailPage({
 
       <nav className="detail-nav">
         {previousPhoto !== undefined && (
-          <Link to={`/photos/${previousPhoto.id}`}>← 前の写真</Link>
+          <Link to={{ pathname: `/photos/${previousPhoto.id}`, search }}>← 前の写真</Link>
         )}
         {nextPhoto !== undefined && (
-          <Link to={`/photos/${nextPhoto.id}`}>次の写真 →</Link>
+          <Link to={{ pathname: `/photos/${nextPhoto.id}`, search }}>次の写真 →</Link>
         )}
       </nav>
     </div>

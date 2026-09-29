@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Route, Routes } from "react-router";
+import { Link, Route, Routes, useLocation, useSearchParams } from "react-router";
 import type { LoadStatus, Photo } from "./types";
 import { buildPhotosUrl, toPhoto } from "./photosApi";
 import GalleryPage from "./GalleryPage";
@@ -10,7 +10,16 @@ function App() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [loadError, setLoadError] = useState("");
-  const [page, setPage] = useState(1);
+  const { search } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedPage = Number(searchParams.get("page") ?? "1");
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+    ? requestedPage
+    : 1;
+
+  const handlePageChange = (nextPage: number) => {
+    setSearchParams({ page: String(nextPage) });
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -69,7 +78,7 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <Link to="/" className="header-title">
+        <Link to={{ pathname: "/", search }} className="header-title">
           Photo Gallery
         </Link>
       </header>
@@ -85,7 +94,7 @@ function App() {
                 page={page}
                 status={status}
                 loadError={loadError}
-                onPageChange={setPage}
+                onPageChange={handlePageChange}
                 onToggleFavorite={handleToggleFavorite}
               />
             }

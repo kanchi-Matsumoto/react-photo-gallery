@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
 type PhotoCardProps = {
   id: string;
@@ -15,9 +15,11 @@ function PhotoCard({
   isFavorite,
   onToggleFavorite,
 }: PhotoCardProps) {
+  const { search } = useLocation();
+
   return (
     <article className="card">
-      <Link to={`/photos/${id}`}>
+      <Link to={{ pathname: `/photos/${id}`, search }}>
         <img className="card-image" src={imageUrl} alt={`${author}の写真`} />
       </Link>
       <div className="card-body">

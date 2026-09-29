@@ -1,11 +1,4 @@
-export type ApiPhoto = {
-  id: string;
-  author: string;
-  width: number;
-  height: number;
-  url: string;
-  download_url: string;
-};
+export type LoadStatus = "loading" | "error" | "success";
 
 export type Photo = {
   id: string;

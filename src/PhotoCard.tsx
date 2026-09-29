@@ -25,6 +25,7 @@ function PhotoCard({
         <button
           type="button"
           className={isFavorite ? "favorite-button is-on" : "favorite-button"}
+          aria-pressed={isFavorite}
           onClick={() => onToggleFavorite(id)}
         >
           {isFavorite ? "★ お気に入り" : "☆ お気に入り"}

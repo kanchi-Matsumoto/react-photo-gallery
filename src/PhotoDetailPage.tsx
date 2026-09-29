@@ -1,15 +1,19 @@
 import { Link, useParams } from "react-router";
-import type { Photo } from "./types";
+import type { LoadStatus, Photo } from "./types";
 import MemoForm from "./MemoForm";
 
 type PhotoDetailPageProps = {
   photos: Photo[];
+  status: LoadStatus;
+  loadError: string;
   onToggleFavorite: (id: string) => void;
   onSaveMemo: (id: string, memo: string) => void;
 };
 
 function PhotoDetailPage({
   photos,
+  status,
+  loadError,
   onToggleFavorite,
   onSaveMemo,
 }: PhotoDetailPageProps) {
@@ -17,10 +21,18 @@ function PhotoDetailPage({
 
   const photo = photos.find((item) => item.id === id);
 
+  if (status === "loading") {
+    return <p className="message">読み込み中です...</p>;
+  }
+
+  if (status === "error") {
+    return <p className="message error">{loadError}</p>;
+  }
+
   if (photo === undefined) {
     return (
       <div className="detail">
-        <p className="message">写真が見つかりませんでした。</p>
+        <p className="message">今の一覧に、この写真はありません。</p>
         <Link to="/" className="back-link">
           一覧へ戻る
         </Link>
@@ -48,6 +60,7 @@ function PhotoDetailPage({
       <button
         type="button"
         className={photo.isFavorite ? "favorite-button is-on" : "favorite-button"}
+        aria-pressed={photo.isFavorite}
         onClick={() => onToggleFavorite(photo.id)}
       >
         {photo.isFavorite ? "★ お気に入り" : "☆ お気に入り"}
@@ -62,7 +75,7 @@ function PhotoDetailPage({
           <p className="memo-body">{photo.memo}</p>
         )}
 
-        <MemoForm onSave={(memo) => onSaveMemo(photo.id, memo)} />
+        <MemoForm key={photo.id} onSave={(memo) => onSaveMemo(photo.id, memo)} />
       </section>
 
       <nav className="detail-nav">

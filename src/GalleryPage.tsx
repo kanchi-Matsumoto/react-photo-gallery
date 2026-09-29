@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import type { Photo } from "./types";
+import { useState } from "react";
+import type { LoadStatus, Photo } from "./types";
 import PhotoCard from "./PhotoCard";
 
 type GalleryPageProps = {
   photos: Photo[];
   page: number;
-  favoriteCount: number;
+  status: LoadStatus;
+  loadError: string;
   onPageChange: (page: number) => void;
   onToggleFavorite: (id: string) => void;
 };
@@ -13,28 +14,25 @@ type GalleryPageProps = {
 function GalleryPage({
   photos,
   page,
-  favoriteCount,
+  status,
+  loadError,
   onPageChange,
   onToggleFavorite,
 }: GalleryPageProps) {
   const [keyword, setKeyword] = useState("");
   const [showsFavoriteOnly, setShowsFavoriteOnly] = useState(false);
-  const [visiblePhotos, setVisiblePhotos] = useState<Photo[]>([]);
+  const visiblePhotos = photos
+    .filter((photo) => photo.author.toLowerCase().includes(keyword.toLowerCase()))
+    .filter((photo) => (showsFavoriteOnly ? photo.isFavorite : true));
+  const favoriteCount = photos.filter((photo) => photo.isFavorite).length;
 
-  useEffect(() => {
-    setVisiblePhotos(
-      photos
-        .filter((photo) =>
-          photo.author.toLowerCase().includes(keyword.toLowerCase()),
-        )
-        .filter((photo) => (showsFavoriteOnly ? photo.isFavorite : true)),
-    );
-  }, [photos, keyword, showsFavoriteOnly]);
+  if (status === "loading") {
+    return <p className="message">読み込み中です...</p>;
+  }
 
-  useEffect(() => {
-    setKeyword("");
-    setShowsFavoriteOnly(false);
-  }, [page]);
+  if (status === "error") {
+    return <p className="message error">{loadError}</p>;
+  }
 
   return (
     <>
@@ -43,12 +41,14 @@ function GalleryPage({
           type="text"
           className="search-input"
           placeholder="作者名でしぼりこむ"
+          aria-label="作者名でしぼりこむ"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
         />
         <button
           type="button"
           className={showsFavoriteOnly ? "filter-button is-on" : "filter-button"}
+          aria-pressed={showsFavoriteOnly}
           onClick={() => setShowsFavoriteOnly(!showsFavoriteOnly)}
         >
           お気に入りのみ（{favoriteCount}）

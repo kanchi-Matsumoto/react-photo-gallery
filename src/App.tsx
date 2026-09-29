@@ -1,19 +1,56 @@
 import { useEffect, useState } from "react";
 import { Link, Route, Routes } from "react-router";
-import type { Photo } from "./types";
-import { samplePhotos } from "./samplePhotos";
+import type { LoadStatus, Photo } from "./types";
+import { buildPhotosUrl, toPhoto } from "./photosApi";
 import GalleryPage from "./GalleryPage";
 import PhotoDetailPage from "./PhotoDetailPage";
 import "./App.css";
 
 function App() {
-  const [photos, setPhotos] = useState<Photo[]>(samplePhotos);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [status, setStatus] = useState<LoadStatus>("loading");
+  const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState(1);
-  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
-    setFavoriteCount(photos.filter((photo) => photo.isFavorite).length);
-  }, [photos]);
+    let ignore = false;
+
+    const loadPhotos = async () => {
+      setStatus("loading");
+
+      try {
+        const response = await fetch(buildPhotosUrl(page));
+
+        if (!response.ok) {
+          throw new Error(`写真の取得に失敗しました（${response.status}）`);
+        }
+
+        const data: unknown = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("写真データの形式が正しくありません");
+        }
+
+        if (!ignore) {
+          setPhotos(data.map(toPhoto));
+          setStatus("success");
+        }
+      } catch (error) {
+        if (ignore) return;
+
+        setLoadError(
+          error instanceof Error ? error.message : "写真の取得に失敗しました",
+        );
+        setStatus("error");
+      }
+    };
+
+    loadPhotos();
+
+    return () => {
+      ignore = true;
+    };
+  }, [page]);
 
   const handleToggleFavorite = (id: string) => {
     setPhotos((currentPhotos) =>
@@ -43,9 +80,11 @@ function App() {
             path="/"
             element={
               <GalleryPage
+                key={page}
                 photos={photos}
                 page={page}
-                favoriteCount={favoriteCount}
+                status={status}
+                loadError={loadError}
                 onPageChange={setPage}
                 onToggleFavorite={handleToggleFavorite}
               />
@@ -56,6 +95,8 @@ function App() {
             element={
               <PhotoDetailPage
                 photos={photos}
+                status={status}
+                loadError={loadError}
                 onToggleFavorite={handleToggleFavorite}
                 onSaveMemo={handleSaveMemo}
               />

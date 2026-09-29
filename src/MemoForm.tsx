@@ -31,6 +31,9 @@ function MemoForm({ onSave }: MemoFormProps) {
           type="text"
           className="memo-input"
           placeholder="この写真のメモ"
+          aria-label="この写真のメモ"
+          aria-invalid={inputError !== ""}
+          aria-describedby={inputError !== "" ? "memo-error" : undefined}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
         />
@@ -39,7 +42,9 @@ function MemoForm({ onSave }: MemoFormProps) {
         </button>
       </form>
 
-      {inputError !== "" && <p className="input-error">{inputError}</p>}
+      {inputError !== "" && (
+        <p id="memo-error" className="input-error" role="alert">{inputError}</p>
+      )}
     </>
   );
 }
